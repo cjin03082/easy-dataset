@@ -7,7 +7,7 @@ import ChatMessage from './ChatMessage';
 import { playgroundStyles } from '@/styles/playground';
 import { useTranslation } from 'react-i18next';
 
-const ChatArea = ({ selectedModels, conversations, loading, getModelName }) => {
+const ChatArea = ({ selectedModels, conversations, loading, getModelName, useAnonymousNames = false }) => {
   const theme = useTheme();
   const styles = playgroundStyles(theme);
   const { t } = useTranslation();
@@ -27,6 +27,15 @@ const ChatArea = ({ selectedModels, conversations, loading, getModelName }) => {
       }
     });
   }, [conversations]);
+
+  // 获取显示名称（匿名或真实）
+  const getDisplayName = (modelId, index) => {
+    if (useAnonymousNames && selectedModels.length > 1) {
+      const labels = ['A', 'B', 'C'];
+      return `模型${labels[index]}`;
+    }
+    return getModelName(modelId);
+  };
 
   if (selectedModels.length === 0) {
     return (
@@ -53,7 +62,7 @@ const ChatArea = ({ selectedModels, conversations, loading, getModelName }) => {
           >
             <Paper elevation={1} sx={styles.modelPaper}>
               <Box sx={styles.modelHeader}>
-                <Typography variant="subtitle2">{getModelName(modelId)}</Typography>
+                <Typography variant="subtitle2">{getDisplayName(modelId, index)}</Typography>
                 {isLoading && <CircularProgress size={16} sx={{ ml: 1 }} color="inherit" />}
               </Box>
 

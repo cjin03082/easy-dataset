@@ -35,6 +35,7 @@ model Projects {
   Images               Images[]
   ImageDatasets        ImageDatasets[]
   QuestionTemplates    QuestionTemplates[]
+  ModelTestSessions    ModelTestSession[]
 }
 
 model UploadFiles {
@@ -305,4 +306,36 @@ model QuestionTemplates {
 
   @@index([projectId])
   @@index([projectId, sourceType])
+}
+
+model ModelTestSession {
+  id            String                @id @default(nanoid())
+  project       Projects              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId     String
+  userQuestion  String // 用户提出的问题
+  modelMapping  String // JSON格式存储模型映射: {"A": "modelId1", "B": "modelId2", "C": "modelId3"}
+  conversations String // JSON格式存储所有模型的对话内容
+  createAt      DateTime              @default(now())
+  updateAt      DateTime              @updatedAt
+  evaluations   ModelTestEvaluation[]
+
+  @@index([projectId])
+}
+
+model ModelTestEvaluation {
+  id              String           @id @default(nanoid())
+  session         ModelTestSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId       String
+  evaluationType  String // 'best' | 'tie' | 'all_bad' - 评估类型
+  selectedModel   String? // 如果evaluationType='best'，存储选中的模型标识（A/B/C）
+  modelAScore     Float            @default(0) // 模型A得分
+  modelBScore     Float            @default(0) // 模型B得分
+  modelCScore     Float            @default(0) // 模型C得分
+  modelAId        String // 模型A的真实ID
+  modelBId        String? // 模型B的真实ID（可选）
+  modelCId        String? // 模型C的真实ID（可选）
+  createAt        DateTime         @default(now())
+  updateAt        DateTime         @updatedAt
+
+  @@index([sessionId])
 }
