@@ -19,3 +19,5 @@ mock-login-callback.ts
 prisma/local-db/db.sqlite
 /local-db2
 .trae
+package-lock.json
+dist.7z

@@ -43,7 +43,6 @@ async function initializeDatabase(app) {
     const userDataPath = app.getPath('userData');
     const dataDir = path.join(userDataPath, 'local-db');
     const dbFilePath = path.join(dataDir, 'db.sqlite');
-    const dbJSONPath = path.join(dataDir, 'db.json');
     fs.writeFileSync(path.join(process.resourcesPath, 'root-path.txt'), dataDir);
 
     // 确保数据目录存在
@@ -82,14 +81,42 @@ async function initializeDatabase(app) {
 
         global.appLog(`resourcePath: ${resourcePath}`);
 
+        // 如果存在模板数据库，先复制它
         if (fs.existsSync(resourcePath)) {
           fs.copyFileSync(resourcePath, dbFilePath);
           global.appLog(`数据库已从模板初始化: ${dbFilePath}`);
         }
 
+        // 复制 sql.json 到 userDataPath 目录（updateDatabase 函数会在这里查找）
         if (fs.existsSync(resourceJSONPath)) {
-          fs.copyFileSync(resourceJSONPath, dbJSONPath);
-          global.appLog(`数据库SQL配置已初始化: ${dbJSONPath}`);
+          const userSqlPath = path.join(userDataPath, 'sql.json');
+          fs.copyFileSync(resourceJSONPath, userSqlPath);
+          global.appLog(`数据库SQL配置已初始化: ${userSqlPath}`);
+        }
+
+        // 初始化后，也运行数据库更新逻辑以确保数据库架构是最新的
+        // 这样可以处理模板数据库缺少新表的情况（如 ModelTestSession）
+        global.appLog('检查并同步数据库架构...');
+        try {
+          const resourcesPath =
+            process.env.NODE_ENV === 'development' ? path.join(__dirname, '../..') : process.resourcesPath;
+
+          const isDev = process.env.NODE_ENV === 'development';
+
+          // 运行数据库更新逻辑
+          const result = await updateDatabase(userDataPath, resourcesPath, isDev, global.appLog);
+
+          if (result.updated) {
+            global.appLog(`数据库架构同步成功: ${result.message}`);
+            if (result.executedVersions && result.executedVersions.length > 0) {
+              global.appLog(`执行的版本: ${result.executedVersions.join(', ')}`);
+            }
+          } else {
+            global.appLog(`数据库架构已是最新版本: ${result.message}`);
+          }
+        } catch (updateError) {
+          // 数据库更新失败不应该阻止应用启动
+          global.appLog(`数据库架构同步失败（非致命）: ${updateError.message}`, 'warn');
         }
       } catch (error) {
         console.error('数据库初始化失败:', error);

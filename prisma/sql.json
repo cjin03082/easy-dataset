@@ -64,5 +64,10 @@
     "version": "1.6.0",
     "description": "创建 QuestionTemplates 表",
     "sql": "CREATE TABLE IF NOT EXISTS QuestionTemplates (\n  id VARCHAR(255) NOT NULL,\n  projectId VARCHAR(255) NOT NULL,\n  question TEXT NOT NULL,\n  sourceType VARCHAR(50) NOT NULL,\n  answerType VARCHAR(50) NOT NULL,\n  description TEXT DEFAULT '' NOT NULL,\n  labels TEXT DEFAULT '' NOT NULL,\n  customFormat TEXT DEFAULT '' NOT NULL,\n  \"order\" INT DEFAULT 0 NOT NULL,\n  createAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  updateAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  PRIMARY KEY (id),\n  FOREIGN KEY (projectId) REFERENCES Projects(id) ON DELETE CASCADE\n);\n\nCREATE INDEX idx_questiontemplates_projectId ON QuestionTemplates(projectId);\nCREATE INDEX idx_questiontemplates_project_source ON QuestionTemplates(projectId, sourceType);"
+  },
+  {
+    "version": "1.6.1",
+    "description": "创建 ModelTestSession 和 ModelTestEvaluation 表",
+    "sql": "CREATE TABLE IF NOT EXISTS ModelTestSession (\n  id VARCHAR(255) NOT NULL,\n  projectId VARCHAR(255) NOT NULL,\n  userQuestion TEXT NOT NULL,\n  modelMapping TEXT NOT NULL,\n  conversations TEXT NOT NULL,\n  createAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  updateAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  PRIMARY KEY (id),\n  FOREIGN KEY (projectId) REFERENCES Projects(id) ON DELETE CASCADE\n);\n\nCREATE INDEX idx_modeltestsession_projectId ON ModelTestSession(projectId);\n\nCREATE TABLE IF NOT EXISTS ModelTestEvaluation (\n  id VARCHAR(255) NOT NULL,\n  sessionId VARCHAR(255) NOT NULL,\n  evaluationType VARCHAR(50) NOT NULL,\n  selectedModel VARCHAR(50) NULL,\n  modelAScore REAL DEFAULT 0 NOT NULL,\n  modelBScore REAL DEFAULT 0 NOT NULL,\n  modelCScore REAL DEFAULT 0 NOT NULL,\n  modelAId VARCHAR(255) NOT NULL,\n  modelBId VARCHAR(255) NULL,\n  modelCId VARCHAR(255) NULL,\n  createAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  updateAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  PRIMARY KEY (id),\n  FOREIGN KEY (sessionId) REFERENCES ModelTestSession(id) ON DELETE CASCADE\n);\n\nCREATE INDEX idx_modeltestevaluation_sessionId ON ModelTestEvaluation(sessionId);"
   }
 ]
