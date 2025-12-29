@@ -21,3 +21,4 @@ prisma/local-db/db.sqlite
 .trae
 package-lock.json
 dist.7z
+app/projects/\[projectId]/playground/page.js.bak

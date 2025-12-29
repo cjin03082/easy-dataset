@@ -264,7 +264,7 @@ export default function ModelPlayground({ searchParams }) {
                 }
               }}
             >
-              {t('playground.evaluate', '评估回答1')}
+              {t('playground.evaluate', '评估回答')}
             </Button>
           )}
         </Box>
